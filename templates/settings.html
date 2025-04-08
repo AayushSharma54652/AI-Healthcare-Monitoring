@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AI Healthcare Monitoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heartbeat"></i> AI Healthcare Monitoring System</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/history">History</a></li>
+                    <li><a href="/settings" class="active">Settings</a></li>
+                    <li><a href="/documentation">Documentation</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="settings-container">
+            <h2>System Settings</h2>
+            
+            <div class="settings-section">
+                <h3><i class="fas fa-bell"></i> Alert Thresholds</h3>
+                <p class="settings-description">Customize when the system should generate alerts based on vital signs.</p>
+                
+                <div class="threshold-settings">
+                    <div class="threshold-group">
+                        <h4>Heart Rate (BPM)</h4>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="hr-min">Min:</label>
+                                <input type="number" id="hr-min" value="60" min="30" max="100">
+                            </div>
+                            <div class="threshold-input">
+                                <label for="hr-max">Max:</label>
+                                <input type="number" id="hr-max" value="100" min="70" max="200">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <h4>Blood Pressure (mmHg)</h4>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="bp-systolic-min">Systolic Min:</label>
+                                <input type="number" id="bp-systolic-min" value="90" min="70" max="120">
+                            </div>
+                            <div class="threshold-input">
+                                <label for="bp-systolic-max">Systolic Max:</label>
+                                <input type="number" id="bp-systolic-max" value="140" min="110" max="200">
+                            </div>
+                        </div>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="bp-diastolic-min">Diastolic Min:</label>
+                                <input type="number" id="bp-diastolic-min" value="60" min="40" max="80">
+                            </div>
+                            <div class="threshold-input">
+                                <label for="bp-diastolic-max">Diastolic Max:</label>
+                                <input type="number" id="bp-diastolic-max" value="90" min="70" max="120">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <h4>Oxygen Saturation (%)</h4>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="o2-min">Min:</label>
+                                <input type="number" id="o2-min" value="95" min="80" max="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <h4>Respiratory Rate (breaths/min)</h4>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="resp-min">Min:</label>
+                                <input type="number" id="resp-min" value="12" min="8" max="16">
+                            </div>
+                            <div class="threshold-input">
+                                <label for="resp-max">Max:</label>
+                                <input type="number" id="resp-max" value="20" min="16" max="30">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <h4>Temperature (°F)</h4>
+                        <div class="threshold-inputs">
+                            <div class="threshold-input">
+                                <label for="temp-min">Min:</label>
+                                <input type="number" id="temp-min" value="97" min="94" max="98" step="0.1">
+                            </div>
+                            <div class="threshold-input">
+                                <label for="temp-max">Max:</label>
+                                <input type="number" id="temp-max" value="99" min="98" max="104" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3><i class="fas fa-brain"></i> AI Model Settings</h3>
+                <p class="settings-description">Configure the AI models used for analysis and prediction.</p>
+                
+                <div class="model-settings">
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="anomaly-sensitivity">Anomaly Detection Sensitivity:</label>
+                            <span class="setting-value" id="anomaly-sensitivity-value">Medium (0.05)</span>
+                        </div>
+                        <input type="range" id="anomaly-sensitivity" min="0.01" max="0.1" step="0.01" value="0.05" class="slider">
+                        <div class="slider-labels">
+                            <span>Less Sensitive</span>
+                            <span>More Sensitive</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="prediction-horizon">Prediction Horizon:</label>
+                            <span class="setting-value" id="prediction-horizon-value">12 readings (36 seconds)</span>
+                        </div>
+                        <input type="range" id="prediction-horizon" min="4" max="20" step="4" value="12" class="slider">
+                        <div class="slider-labels">
+                            <span>Shorter</span>
+                            <span>Longer</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item checkbox">
+                        <input type="checkbox" id="use-patient-baseline" checked>
+                        <label for="use-patient-baseline">Use patient-specific baselines</label>
+                        <p class="setting-description">When enabled, the system learns from the patient's history to establish personalized normal ranges.</p>
+                    </div>
+                    
+                    <div class="setting-item checkbox">
+                        <input type="checkbox" id="enable-advanced-ecg" checked>
+                        <label for="enable-advanced-ecg">Enable advanced ECG analysis</label>
+                        <p class="setting-description">Uses more sophisticated algorithms to detect subtle ECG abnormalities.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3><i class="fas fa-desktop"></i> Display Settings</h3>
+                <p class="settings-description">Customize how information is presented in the dashboard.</p>
+                
+                <div class="display-settings">
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <label for="update-frequency">Update Frequency:</label>
+                            <span class="setting-value" id="update-frequency-value">3 seconds</span>
+                        </div>
+                        <input type="range" id="update-frequency" min="1" max="10" step="1" value="3" class="slider">
+                        <div class="slider-labels">
+                            <span>Faster</span>
+                            <span>Slower</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item checkbox">
+                        <input type="checkbox" id="show-predictions" checked>
+                        <label for="show-predictions">Show AI predictions</label>
+                    </div>
+                    
+                    <div class="setting-item checkbox">
+                        <input type="checkbox" id="enable-sound-alerts" checked>
+                        <label for="enable-sound-alerts">Enable sound alerts</label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="chart-points">Chart data points:</label>
+                        <select id="chart-points">
+                            <option value="10">10 points</option>
+                            <option value="20" selected>20 points</option>
+                            <option value="30">30 points</option>
+                            <option value="60">60 points</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                <button id="reset-defaults" class="btn btn-secondary">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AI Healthcare Monitoring System - Using Advanced ML for Patient Safety</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+</body>
+</html>

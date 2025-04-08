@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - AI Healthcare Monitoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heartbeat"></i> AI Healthcare Monitoring System</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/history">History</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                    <li><a href="/documentation" class="active">Documentation</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="documentation-container">
+            <h2>System Documentation</h2>
+            
+            <div class="doc-section">
+                <h3>System Overview</h3>
+                <p>The AI Healthcare Monitoring System continuously tracks and analyzes patient vital signs using advanced artificial intelligence and machine learning techniques. The system monitors heart rate, blood pressure, respiratory rate, oxygen saturation, temperature, and ECG data in real-time.</p>
+                
+                <p>Key capabilities include:</p>
+                <ul>
+                    <li>Real-time vital signs monitoring with AI-powered analysis</li>
+                    <li>Anomaly detection to identify abnormal patterns</li>
+                    <li>Predictive modeling to forecast vital sign trends</li>
+                    <li>Health risk assessment with multi-factor analysis</li>
+                    <li>ECG pattern analysis with classification of cardiac conditions</li>
+                    <li>Historical data visualization and trend analysis</li>
+                </ul>
+            </div>
+            
+            <div class="doc-section">
+                <h3>AI/ML Components</h3>
+                
+                <div class="ai-component">
+                    <h4>Anomaly Detection</h4>
+                    <p>The system employs an Isolation Forest algorithm to detect anomalies in vital signs. This unsupervised machine learning technique identifies data points that diverge from the overall pattern, which could indicate potential health issues.</p>
+                    <p>Key features:</p>
+                    <ul>
+                        <li>Unsupervised learning - doesn't require labeled training data</li>
+                        <li>Adapts to patient-specific baselines</li>
+                        <li>Detects subtle deviations that might be missed by threshold-based alerts</li>
+                        <li>Provides anomaly scores to quantify the degree of abnormality</li>
+                    </ul>
+                </div>
+                
+                <div class="ai-component">
+                    <h4>Predictive Modeling</h4>
+                    <p>The system uses time-series forecasting techniques similar to Long Short-Term Memory (LSTM) networks to predict future vital sign values. This allows healthcare providers to anticipate potential issues before they become critical.</p>
+                    <p>Key features:</p>
+                    <ul>
+                        <li>Time-series analysis of vital sign patterns</li>
+                        <li>Short-term predictions (next 30-60 seconds) with high accuracy</li>
+                        <li>Trend forecasting to identify developing conditions</li>
+                        <li>Confidence intervals for predictions</li>
+                    </ul>
+                </div>
+                
+                <div class="ai-component">
+                    <h4>Health Risk Assessment</h4>
+                    <p>A multi-factor risk calculation algorithm analyzes the relationships between different vital signs, their trends, and detected anomalies to produce a comprehensive risk score for the patient.</p>
+                    <p>Key features:</p>
+                    <ul>
+                        <li>Weighted analysis of multiple vital sign factors</li>
+                        <li>Consideration of interactions between different vital signs</li>
+                        <li>Identification of specific contributing risk factors</li>
+                        <li>Continuous recalibration based on patient data</li>
+                    </ul>
+                </div>
+                
+                <div class="ai-component">
+                    <h4>ECG Analysis</h4>
+                    <p>The ECG analysis module uses signal processing and pattern recognition to identify cardiac rhythm abnormalities and classify them into specific conditions.</p>
+                    <p>Key features:</p>
+                    <ul>
+                        <li>Detection of R-peaks and calculation of heart rate</li>
+                        <li>Analysis of RR intervals for arrhythmia detection</li>
+                        <li>ST segment analysis for ischemia indication</li>
+                        <li>Classification of multiple cardiac conditions with confidence scores</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="doc-section">
+                <h3>Interpreting Results</h3>
+                
+                <div class="interpretation-item">
+                    <h4>Risk Score</h4>
+                    <p>The risk score is a value between 0-100% that indicates the overall health risk based on analysis of all vital signs:</p>
+                    <ul>
+                        <li><span class="risk-level low">Low Risk (0-30%)</span>: Normal vital signs with minimal concerns</li>
+                        <li><span class="risk-level medium">Medium Risk (30-70%)</span>: Some abnormal patterns detected that require monitoring</li>
+                        <li><span class="risk-level high">High Risk (70-100%)</span>: Significant abnormalities detected that may require immediate attention</li>
+                    </ul>
+                </div>
+                
+                <div class="interpretation-item">
+                    <h4>Anomaly Detection</h4>
+                    <p>The system highlights anomalies in different colors based on severity:</p>
+                    <ul>
+                        <li><span class="anomaly-level normal">Normal (Green)</span>: Values within expected range</li>
+                        <li><span class="anomaly-level warning">Warning (Yellow)</span>: Values outside normal range but not severely</li>
+                        <li><span class="anomaly-level critical">Critical (Red)</span>: Values significantly outside normal range</li>
+                    </ul>
+                </div>
+                
+                <div class="interpretation-item">
+                    <h4>AI Insights</h4>
+                    <p>The AI insights section provides explanations of detected patterns and their potential significance. These insights combine multiple data points to provide context that might not be apparent from individual readings.</p>
+                </div>
+            </div>
+            
+            <div class="doc-section">
+                <h3>Technical Details</h3>
+                <p>The system is built using a combination of modern technologies:</p>
+                <ul>
+                    <li>Backend: Python with Flask for web serving and data processing</li>
+                    <li>AI/ML: Scikit-learn for anomaly detection and other ML algorithms</li>
+                    <li>Frontend: HTML, CSS, and JavaScript with Chart.js for visualizations</li>
+                    <li>Real-time Updates: Flask-SocketIO for bidirectional communication</li>
+                </ul>
+                
+                <p>Key AI/ML algorithms implemented:</p>
+                <ul>
+                    <li>Isolation Forest for anomaly detection</li>
+                    <li>Time series forecasting for predictive modeling</li>
+                    <li>Feature extraction and pattern recognition for ECG analysis</li>
+                    <li>Multi-factor weighted risk assessment</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AI Healthcare Monitoring System - Using Advanced ML for Patient Safety</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient History - AI Healthcare Monitoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heartbeat"></i> AI Healthcare Monitoring System</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/history" class="active">History</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                    <li><a href="/documentation">Documentation</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="patient-info">
+            <div class="patient-header">
+                <h2>Patient: John Doe</h2>
+                <p>ID: 12345 | Age: 45 | Room: 302</p>
+            </div>
+            <div class="date-range-selector">
+                <label for="time-range">Time Range:</label>
+                <select id="time-range" onchange="updateTimeRange()">
+                    <option value="6">Last 6 Hours</option>
+                    <option value="12">Last 12 Hours</option>
+                    <option value="24" selected>Last 24 Hours</option>
+                    <option value="48">Last 48 Hours</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="history-grid">
+            <!-- Heart Rate History -->
+            <div class="history-panel">
+                <h3>Heart Rate History</h3>
+                <div class="history-chart-container">
+                    <canvas id="heart-rate-history-chart"></canvas>
+                </div>
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value" id="hr-avg">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Min:</span>
+                        <span class="stat-value" id="hr-min">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Max:</span>
+                        <span class="stat-value" id="hr-max">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Blood Pressure History -->
+            <div class="history-panel">
+                <h3>Blood Pressure History</h3>
+                <div class="history-chart-container">
+                    <canvas id="bp-history-chart"></canvas>
+                </div>
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value" id="bp-avg">--/--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Min:</span>
+                        <span class="stat-value" id="bp-min">--/--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Max:</span>
+                        <span class="stat-value" id="bp-max">--/--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Oxygen Saturation History -->
+            <div class="history-panel">
+                <h3>Oxygen Saturation History</h3>
+                <div class="history-chart-container">
+                    <canvas id="o2-history-chart"></canvas>
+                </div>
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value" id="o2-avg">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Min:</span>
+                        <span class="stat-value" id="o2-min">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Max:</span>
+                        <span class="stat-value" id="o2-max">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Respiratory Rate History -->
+            <div class="history-panel">
+                <h3>Respiratory Rate History</h3>
+                <div class="history-chart-container">
+                    <canvas id="resp-history-chart"></canvas>
+                </div>
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value" id="resp-avg">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Min:</span>
+                        <span class="stat-value" id="resp-min">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Max:</span>
+                        <span class="stat-value" id="resp-max">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Analysis History -->
+            <div class="history-panel wide">
+                <h3>AI Risk Score History</h3>
+                <div class="history-chart-container">
+                    <canvas id="risk-history-chart"></canvas>
+                </div>
+                <div class="ai-insights">
+                    <h4>AI Insights</h4>
+                    <p id="ai-trend-analysis">Analyzing patient data trends...</p>
+                    <div class="download-section">
+                        <button id="download-report" class="btn"><i class="fas fa-download"></i> Download Analysis Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert History -->
+            <div class="history-panel wide">
+                <h3>Alert History</h3>
+                <div class="alert-history-container" id="alert-history">
+                    <p class="empty-state">Loading alert history...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AI Healthcare Monitoring System - Using Advanced ML for Patient Safety</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+</body>
+</html>

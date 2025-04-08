@@ -1,0 +1,206 @@
+=<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Healthcare Monitoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heartbeat"></i> AI Healthcare Monitoring System</h1>
+            <nav>
+                <ul>
+                    <li><a href="/" class="active">Dashboard</a></li>
+                    <li><a href="/history">History</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                    <li><a href="/documentation">Documentation</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="patient-info">
+            <div class="patient-header">
+                <h2>Patient: John Doe</h2>
+                <p>ID: 12345 | Age: 45 | Room: 302</p>
+            </div>
+            <div class="status-indicator high-risk">
+                <span id="risk-score-display">Risk Score: Calculating...</span>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="vitals-grid">
+                <!-- Heart Rate Panel -->
+                <div class="vital-sign-panel" id="heart-rate-panel">
+                    <div class="vital-header">
+                        <h3>Heart Rate</h3>
+                        <div class="status-indicator normal" id="heart-rate-status"></div>
+                    </div>
+                    <div class="vital-value-container">
+                        <div class="vital-value" id="heart-rate-value">--</div>
+                        <div class="vital-unit">BPM</div>
+                    </div>
+                    <div class="vital-chart-container">
+                        <canvas id="heart-rate-chart"></canvas>
+                    </div>
+                    <div class="vital-prediction">
+                        <div class="prediction-label">AI Prediction (next 30s):</div>
+                        <div class="prediction-value" id="heart-rate-prediction">--</div>
+                    </div>
+                </div>
+                
+                <!-- Blood Pressure Panel -->
+                <div class="vital-sign-panel" id="blood-pressure-panel">
+                    <div class="vital-header">
+                        <h3>Blood Pressure</h3>
+                        <div class="status-indicator normal" id="blood-pressure-status"></div>
+                    </div>
+                    <div class="vital-value-container">
+                        <div class="vital-value" id="blood-pressure-value">--/--</div>
+                        <div class="vital-unit">mmHg</div>
+                    </div>
+                    <div class="vital-chart-container">
+                        <canvas id="blood-pressure-chart"></canvas>
+                    </div>
+                    <div class="vital-prediction">
+                        <div class="prediction-label">AI Prediction (next 30s):</div>
+                        <div class="prediction-value" id="blood-pressure-prediction">--/--</div>
+                    </div>
+                </div>
+                
+                <!-- Oxygen Saturation Panel -->
+                <div class="vital-sign-panel" id="oxygen-panel">
+                    <div class="vital-header">
+                        <h3>Oxygen Saturation</h3>
+                        <div class="status-indicator normal" id="oxygen-status"></div>
+                    </div>
+                    <div class="vital-value-container">
+                        <div class="vital-value" id="oxygen-value">--</div>
+                        <div class="vital-unit">%</div>
+                    </div>
+                    <div class="vital-chart-container">
+                        <canvas id="oxygen-chart"></canvas>
+                    </div>
+                    <div class="vital-prediction">
+                        <div class="prediction-label">AI Prediction (next 30s):</div>
+                        <div class="prediction-value" id="oxygen-prediction">--</div>
+                    </div>
+                </div>
+                
+                <!-- Respiratory Rate Panel -->
+                <div class="vital-sign-panel" id="respiratory-panel">
+                    <div class="vital-header">
+                        <h3>Respiratory Rate</h3>
+                        <div class="status-indicator normal" id="respiratory-status"></div>
+                    </div>
+                    <div class="vital-value-container">
+                        <div class="vital-value" id="respiratory-value">--</div>
+                        <div class="vital-unit">breaths/min</div>
+                    </div>
+                    <div class="vital-chart-container">
+                        <canvas id="respiratory-chart"></canvas>
+                    </div>
+                    <div class="vital-prediction">
+                        <div class="prediction-label">AI Prediction (next 30s):</div>
+                        <div class="prediction-value" id="respiratory-prediction">--</div>
+                    </div>
+                </div>
+                
+                <!-- Temperature Panel -->
+                <div class="vital-sign-panel" id="temperature-panel">
+                    <div class="vital-header">
+                        <h3>Temperature</h3>
+                        <div class="status-indicator normal" id="temperature-status"></div>
+                    </div>
+                    <div class="vital-value-container">
+                        <div class="vital-value" id="temperature-value">--</div>
+                        <div class="vital-unit">°F</div>
+                    </div>
+                    <div class="vital-chart-container">
+                        <canvas id="temperature-chart"></canvas>
+                    </div>
+                    <div class="vital-prediction">
+                        <div class="prediction-label">AI Prediction (next 30s):</div>
+                        <div class="prediction-value" id="temperature-prediction">--</div>
+                    </div>
+                </div>
+                
+                <!-- ECG Panel (Wide) -->
+                <div class="vital-sign-panel wide" id="ecg-panel">
+                    <div class="vital-header">
+                        <h3>ECG</h3>
+                        <div class="status-indicator normal" id="ecg-status"></div>
+                    </div>
+                    <div class="ecg-container">
+                        <canvas id="ecg-chart"></canvas>
+                    </div>
+                    <div class="ecg-analysis">
+                        <div class="ecg-label">AI Analysis:</div>
+                        <div class="ecg-value" id="ecg-analysis">Normal sinus rhythm</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- AI Analysis Panel -->
+                <div class="panel" id="ai-analysis-panel">
+                    <h3><i class="fas fa-brain"></i> AI Analysis</h3>
+                    <div class="ai-insight">
+                        <div class="ai-risk-meter">
+                            <div class="risk-meter-label">Risk Score</div>
+                            <div class="risk-meter-container">
+                                <div class="risk-meter-bar">
+                                    <div class="risk-meter-fill" id="risk-meter-fill"></div>
+                                </div>
+                                <div class="risk-meter-value" id="risk-meter-value">--</div>
+                            </div>
+                        </div>
+                        <div class="ai-factors">
+                            <h4>Contributing Factors:</h4>
+                            <ul id="risk-factors-list">
+                                <li>Loading risk factors...</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- New AI Explainer Section -->
+                        <div class="ai-explainer">
+                          <h4>AI Analysis Explanation</h4>
+                          <div class="explainer-content" id="ai-explainer-content">
+                            <p>Monitoring patient vitals and analyzing patterns...</p>
+                          </div>
+                          <div class="feature-importance">
+                            <h5>Feature Importance</h5>
+                            <div class="importance-bars" id="feature-importance-bars">
+                              <!-- Will be populated by JavaScript -->
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts Panel -->
+                <div class="panel" id="alerts-panel">
+                    <h3><i class="fas fa-bell"></i> Alerts</h3>
+                    <div class="alerts-container" id="alerts-container">
+                        <div class="alert-placeholder">No alerts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AI Healthcare Monitoring System - Using Advanced ML for Patient Safety</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ecg_visualization.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai_explainer.js') }}"></script>
+</body>
+</html>
