@@ -9,34 +9,27 @@ from datetime import datetime, timedelta
 
 # Import our modules
 from utils.data_generator import VitalsGenerator
-from models.anomaly_detector import AnomalyDetector
+from models.enhanced_anomaly_detector import EnhancedAnomalyDetector as AnomalyDetector
 from models.lstm_predictor import LSTMPredictor
 from models.risk_calculator import RiskCalculator
 from models.ecg_analyzer import ECGAnalyzer
+from utils.helpers import make_json_serializable
 
-# Helper function to make data JSON serializable
-def make_json_serializable(obj):
-    """Convert objects to JSON serializable formats"""
-    if isinstance(obj, dict):
-        return {k: make_json_serializable(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [make_json_serializable(item) for item in obj]
-    elif isinstance(obj, (bool, int, float, str, type(None))):
-        return obj
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.bool_):
-        return bool(obj)
-    else:
-        return str(obj)  # Convert any other type to string
+# Import the simulator and explainable AI routes
+from routes.simulator_routes import simulator_bp
+from routes.explainable_ai_routes import explainable_ai_bp, register_socketio_handlers
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'healthcare-monitoring-secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Register blueprints
+app.register_blueprint(simulator_bp)
+app.register_blueprint(explainable_ai_bp)
+
+# Register socketio handlers for explainable AI
+register_socketio_handlers(socketio)
 
 # Initialize our patient data and models
 vitals_generator = VitalsGenerator()
@@ -116,8 +109,8 @@ def background_monitoring():
         # 4. ECG analysis
         ecg_analysis = ecg_analyzer.analyze(current_data['ecg_data'])
         
-        # Check for alerts
-        if risk_score > 0.7 or any(val for key, val in anomaly_results.items() if isinstance(val, bool) and val):
+        # Modified alert check with minimum risk threshold
+        if risk_score > 0.15 or (risk_score > 0.05 and any(val for key, val in anomaly_results.items() if isinstance(val, bool) and val)):
             alert = {
                 'timestamp': current_time,
                 'risk_score': risk_score,
@@ -166,8 +159,6 @@ def get_history():
 @app.route('/api/alerts')
 def get_alerts():
     return jsonify(make_json_serializable(alerts))
-
-# Add these routes to your app.py
 
 @app.route('/api/risk-history')
 def get_risk_history():
@@ -249,7 +240,7 @@ def handle_settings():
             }
         }
         return jsonify(default_settings)
-    
+
 @app.route('/documentation')
 def documentation():
     return render_template('documentation.html')
@@ -261,6 +252,52 @@ def handle_connect():
         'patient_data_history': make_json_serializable(patient_data_history),
         'alerts': make_json_serializable(alerts)
     })
+
+@socketio.on('simulate_vitals')
+def handle_simulated_vitals(data):
+    """
+    Handle simulated vital signs from the simulator page.
+    This allows the simulator to inject data into the real-time monitoring system.
+    """
+    # Create a structured current_data object from simulator data
+    current_data = {
+        'heart_rate': data['heartRate'],
+        'blood_pressure': [data['bloodPressure'][0], data['bloodPressure'][1]],
+        'respiratory_rate': data['respiratoryRate'],
+        'oxygen_saturation': data['oxygenSaturation'],
+        'temperature': data['temperature'],
+        'ecg_data': data.get('ecgData', [0] * 250)  # Default empty ECG if not provided
+    }
+    
+    # Run AI analysis on simulated data
+    anomaly_results = anomaly_detector.detect(current_data, patient_data_history)
+    predictions = lstm_predictor.predict(patient_data_history)
+    risk_score, risk_factors = risk_calculator.calculate_risk(current_data, predictions, anomaly_results)
+    ecg_analysis = ecg_analyzer.analyze(current_data['ecg_data'])
+    
+    # Return analysis results to the simulator
+    emit('simulation_analysis', {
+        'anomaly_results': make_json_serializable(anomaly_results),
+        'predictions': make_json_serializable(predictions),
+        'risk_score': risk_score,
+        'risk_factors': risk_factors,
+        'ecg_analysis': make_json_serializable(ecg_analysis)
+    })
+    
+    # Optionally update the main dashboard for all clients
+    # This allows the simulator to affect the real dashboard
+    if data.get('updateDashboard', False):
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        emit_data = {
+            'current_vitals': make_json_serializable(current_data),
+            'predictions': make_json_serializable(predictions),
+            'anomaly_results': make_json_serializable(anomaly_results),
+            'risk_score': risk_score,
+            'risk_factors': risk_factors,
+            'ecg_analysis': make_json_serializable(ecg_analysis),
+            'alerts': make_json_serializable(alerts)
+        }
+        socketio.emit('vitals_update', emit_data)
 
 if __name__ == '__main__':
     # Generate initial historical data

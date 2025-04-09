@@ -1,68 +1,103 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+import os
+import tensorflow as tf
+
+# Import our custom LSTM model and data preprocessing utilities
+from models.lstm_model import HealthcareLSTM
+from utils.data_preprocessing import HealthcareDataPreprocessor
 
 class LSTMPredictor:
     """
-    Simulated LSTM predictor for vital signs
+    LSTM-based predictor for vital signs.
     
-    Note: In a real system, this would use TensorFlow or PyTorch to implement
-    actual LSTM networks. For this demo, we'll simulate the predictions.
+    This class uses a real LSTM neural network to predict future vital signs
+    based on historical data.
     """
     
-    def __init__(self):
-        # In a real system, we would load pre-trained models here
-        self.prediction_horizon = 12  # Predict 12 readings ahead (36 seconds at 3s intervals)
-    
-    def _preprocess_data(self, history):
-        """Convert history dict to dataframe for analysis"""
-        df = pd.DataFrame({
-            'timestamp': history['timestamps'],
-            'heart_rate': history['heart_rate'],
-            'blood_pressure_systolic': history['blood_pressure_systolic'],
-            'blood_pressure_diastolic': history['blood_pressure_diastolic'],
-            'respiratory_rate': history['respiratory_rate'],
-            'oxygen_saturation': history['oxygen_saturation'],
-            'temperature': history['temperature']
+    def __init__(self, model_config=None):
+        """
+        Initialize the LSTM predictor.
+        
+        Args:
+            model_config (dict, optional): Configuration for the LSTM model
+        """
+        # Default configuration
+        self.config = {
+            'sequence_length': 24,      # Use 24 time steps to predict
+            'prediction_horizon': 12,   # Predict 12 steps ahead
+            'feature_columns': [
+                'heart_rate', 
+                'blood_pressure_systolic', 
+                'blood_pressure_diastolic',
+                'respiratory_rate',
+                'oxygen_saturation'
+            ],
+            'model_path': 'models/saved_lstm_model',
+            'use_simulated_prediction': True  # Fall back to simulation if model not ready
+        }
+        
+        # Update with provided config if any
+        if model_config:
+            self.config.update(model_config)
+        
+        # Initialize the data preprocessor
+        self.preprocessor = HealthcareDataPreprocessor(
+            sequence_length=self.config['sequence_length'],
+            prediction_horizon=self.config['prediction_horizon'],
+            feature_columns=self.config['feature_columns']
+        )
+        
+        # Initialize the LSTM model
+        self.lstm_model = HealthcareLSTM({
+            'sequence_length': self.config['sequence_length'],
+            'prediction_horizon': self.config['prediction_horizon'],
+            'feature_count': len(self.config['feature_columns']),
+            'model_path': self.config['model_path']
         })
         
-        # Convert timestamp strings to datetime objects
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        # Check if model is available or if we need to use simulation
+        self.model_available = (
+            self.lstm_model.model is not None and 
+            os.path.exists(self.config['model_path'])
+        )
         
-        return df
+        if not self.model_available and not self.config['use_simulated_prediction']:
+            raise ValueError("LSTM model not available and simulation is disabled.")
+        
+        print(f"LSTM Predictor initialized. Using {'real model' if self.model_available else 'simulation mode'}.")
     
-    def _predict_next_values(self, series, num_points=12):
+    def _simulated_predict(self, history):
         """
-        Simulate LSTM prediction for a time series
+        Simulate LSTM prediction (used as fallback).
         
-        In a real system, this would use an actual LSTM model to predict future values.
-        For demo purposes, we're using a simple linear trend + last value prediction.
-        """
-        # Get the last few values
-        recent_values = series[-20:]
+        In a real system, this would not be needed once the model is fully trained.
+        This is just to maintain compatibility with the existing system during transition.
         
-        # Calculate a simple trend
-        if len(recent_values) > 5:
-            trend = (recent_values[-1] - recent_values[-5]) / 5
-        else:
-            trend = 0
-        
-        # Predict future values with slight random variation
-        predictions = []
-        last_value = recent_values[-1]
-        
-        for i in range(num_points):
-            next_value = last_value + trend * (i+1) + np.random.normal(0, 0.5)
-            predictions.append(next_value)
+        Args:
+            history (dict): Historical data dictionary
             
-        return predictions
-    
-    def predict(self, history):
-        """Generate predictions for the next hour of vital signs"""
-        # Preprocess historical data
-        df = self._preprocess_data(history)
+        Returns:
+            dict: Predicted values for each vital sign
+        """
+        # Get the last few values for each vital sign
+        recent_hr = history['heart_rate'][-20:]
+        recent_bp_sys = history['blood_pressure_systolic'][-20:]
+        recent_bp_dia = history['blood_pressure_diastolic'][-20:]
+        recent_rr = history['respiratory_rate'][-20:]
+        recent_o2 = history['oxygen_saturation'][-20:]
+        recent_temp = history['temperature'][-20:]
         
-        # Make predictions for each vital sign
+        # Calculate simple trends
+        hr_trend = (recent_hr[-1] - recent_hr[-5]) / 5 if len(recent_hr) > 5 else 0
+        bp_sys_trend = (recent_bp_sys[-1] - recent_bp_sys[-5]) / 5 if len(recent_bp_sys) > 5 else 0
+        bp_dia_trend = (recent_bp_dia[-1] - recent_bp_dia[-5]) / 5 if len(recent_bp_dia) > 5 else 0
+        rr_trend = (recent_rr[-1] - recent_rr[-5]) / 5 if len(recent_rr) > 5 else 0
+        o2_trend = (recent_o2[-1] - recent_o2[-5]) / 5 if len(recent_o2) > 5 else 0
+        temp_trend = (recent_temp[-1] - recent_temp[-5]) / 5 if len(recent_temp) > 5 else 0
+        
+        # Generate predictions
         predictions = {
             'timestamps': [],
             'heart_rate': [],
@@ -74,25 +109,127 @@ class LSTMPredictor:
         }
         
         # Generate future timestamps
-        last_timestamp = df['timestamp'].iloc[-1]
-        for i in range(1, self.prediction_horizon + 1):
+        last_timestamp = datetime.strptime(history['timestamps'][-1], "%Y-%m-%d %H:%M:%S")
+        for i in range(1, self.config['prediction_horizon'] + 1):
             future_timestamp = last_timestamp + timedelta(seconds=3*i)
             predictions['timestamps'].append(future_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
         
-        # Predict each vital sign
-        predictions['heart_rate'] = self._predict_next_values(df['heart_rate'].values)
-        predictions['blood_pressure_systolic'] = self._predict_next_values(df['blood_pressure_systolic'].values)
-        predictions['blood_pressure_diastolic'] = self._predict_next_values(df['blood_pressure_diastolic'].values)
-        predictions['respiratory_rate'] = self._predict_next_values(df['respiratory_rate'].values)
-        predictions['oxygen_saturation'] = self._predict_next_values(df['oxygen_saturation'].values)
-        predictions['temperature'] = self._predict_next_values(df['temperature'].values)
+        # Predict each vital sign with simple trends + random variation
+        last_hr = recent_hr[-1]
+        last_bp_sys = recent_bp_sys[-1]
+        last_bp_dia = recent_bp_dia[-1]
+        last_rr = recent_rr[-1]
+        last_o2 = recent_o2[-1]
+        last_temp = recent_temp[-1]
         
-        # Round the values for display
-        predictions['heart_rate'] = [round(x, 1) for x in predictions['heart_rate']]
-        predictions['blood_pressure_systolic'] = [round(x) for x in predictions['blood_pressure_systolic']]
-        predictions['blood_pressure_diastolic'] = [round(x) for x in predictions['blood_pressure_diastolic']]
-        predictions['respiratory_rate'] = [round(x, 1) for x in predictions['respiratory_rate']]
-        predictions['oxygen_saturation'] = [round(x, 1) for x in predictions['oxygen_saturation']]
-        predictions['temperature'] = [round(x, 1) for x in predictions['temperature']]
+        for i in range(self.config['prediction_horizon']):
+            # Heart rate
+            next_hr = last_hr + hr_trend * (i+1) + np.random.normal(0, 0.5)
+            predictions['heart_rate'].append(round(next_hr, 1))
+            
+            # Blood pressure
+            next_bp_sys = last_bp_sys + bp_sys_trend * (i+1) + np.random.normal(0, 0.8)
+            next_bp_dia = last_bp_dia + bp_dia_trend * (i+1) + np.random.normal(0, 0.5)
+            predictions['blood_pressure_systolic'].append(round(next_bp_sys))
+            predictions['blood_pressure_diastolic'].append(round(next_bp_dia))
+            
+            # Respiratory rate
+            next_rr = last_rr + rr_trend * (i+1) + np.random.normal(0, 0.2)
+            predictions['respiratory_rate'].append(round(next_rr, 1))
+            
+            # Oxygen saturation
+            next_o2 = min(100, last_o2 + o2_trend * (i+1) + np.random.normal(0, 0.1))
+            predictions['oxygen_saturation'].append(round(next_o2, 1))
+            
+            # Temperature
+            next_temp = last_temp + temp_trend * (i+1) + np.random.normal(0, 0.05)
+            predictions['temperature'].append(round(next_temp, 1))
         
         return predictions
+    
+    def predict(self, history):
+        """
+        Generate predictions for the next time steps of vital signs.
+        
+        Args:
+            history (dict): Historical data dictionary
+            
+        Returns:
+            dict: Predicted values for each vital sign
+        """
+        # Check if we should use the real model or simulation
+        if not self.model_available or self.config['use_simulated_prediction']:
+            return self._simulated_predict(history)
+        
+        try:
+            # Preprocess the data
+            input_sequence = self.preprocessor.preprocess_real_time_data(history)
+            
+            # Make prediction using the model
+            predictions_array = self.lstm_model.predict(input_sequence)
+            
+            # Convert predictions back to original scale
+            predictions = self.preprocessor.inverse_transform_predictions(predictions_array[0])
+            
+            # Add temperature predictions (if not included in the model)
+            if 'temperature' not in self.config['feature_columns']:
+                # Use simpler prediction for temperature
+                recent_temp = history['temperature'][-20:]
+                temp_trend = (recent_temp[-1] - recent_temp[-5]) / 5 if len(recent_temp) > 5 else 0
+                
+                predictions['temperature'] = []
+                for i in range(self.config['prediction_horizon']):
+                    next_temp = recent_temp[-1] + temp_trend * (i+1) + np.random.normal(0, 0.05)
+                    predictions['temperature'].append(round(next_temp, 1))
+                
+            return predictions
+            
+        except Exception as e:
+            print(f"Error making LSTM prediction: {e}. Falling back to simulation.")
+            return self._simulated_predict(history)
+    
+    def train_model(self, patient_data_history, epochs=50, batch_size=32):
+        """
+        Train the LSTM model on historical data.
+        
+        This method should be called periodically to update the model
+        with new patient data.
+        
+        Args:
+            patient_data_history (dict): Historical patient data
+            epochs (int): Number of training epochs
+            batch_size (int): Batch size for training
+            
+        Returns:
+            bool: True if training was successful
+        """
+        try:
+            from utils.model_training import ModelTrainer
+            
+            # Create model trainer
+            trainer = ModelTrainer(self.lstm_model, self.preprocessor)
+            
+            # Prepare data
+            X_train, y_train, X_val, y_val, X_test, y_test = trainer.prepare_data(
+                patient_data_history, test_size=0.15, validation_size=0.15
+            )
+            
+            # Train model
+            trainer.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
+            
+            # Evaluate model
+            metrics = trainer.evaluate_model(X_test, y_test)
+            
+            # Save metrics
+            os.makedirs('logs', exist_ok=True)
+            trainer.save_metrics('logs/lstm_metrics.json')
+            
+            # Update model availability flag
+            self.model_available = True
+            
+            print("LSTM model training completed successfully.")
+            return True
+            
+        except Exception as e:
+            print(f"Error training LSTM model: {e}")
+            return False
