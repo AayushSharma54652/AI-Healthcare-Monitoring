@@ -6,6 +6,7 @@ import pandas as pd
 import time
 import threading
 from datetime import datetime, timedelta
+import os
 
 # Import our modules
 from utils.data_generator import VitalsGenerator
@@ -19,6 +20,16 @@ from utils.helpers import make_json_serializable
 from routes.simulator_routes import simulator_bp
 from routes.explainable_ai_routes import explainable_ai_bp, register_socketio_handlers
 
+# Import the new multimodal monitoring routes
+from routes.multimodal_routes import multimodal_bp
+from models.multimodal.pneumonia_detector import PneumoniaDetector
+from routes.pneumonia_routes import pneumonia_bp
+from routes.brain_tumor_routes import brain_tumor_bp
+from routes.kidney_stone_routes import kidney_stone_bp
+
+# Import the new disease prediction routes
+from routes.disease_prediction_routes import disease_prediction_bp
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'healthcare-monitoring-secret!'
@@ -27,9 +38,32 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Register blueprints
 app.register_blueprint(simulator_bp)
 app.register_blueprint(explainable_ai_bp)
+app.register_blueprint(multimodal_bp)
+app.register_blueprint(pneumonia_bp)
+app.register_blueprint(brain_tumor_bp)
+app.register_blueprint(kidney_stone_bp)
+app.register_blueprint(disease_prediction_bp)  # Register the disease prediction blueprint
 
 # Register socketio handlers for explainable AI
 register_socketio_handlers(socketio)
+
+# Create directories for brain tumor samples (if they don't exist already)
+os.makedirs('static/samples/mri/glioma', exist_ok=True)
+os.makedirs('static/samples/mri/meningioma', exist_ok=True)
+os.makedirs('static/samples/mri/notumor', exist_ok=True)
+os.makedirs('static/samples/mri/pituitary', exist_ok=True)
+
+# Create directories for kidney stone samples (if they don't exist already)
+os.makedirs('static/samples/ct/normal', exist_ok=True)
+os.makedirs('static/samples/ct/stone', exist_ok=True)
+
+# Create directories for model and dataset
+os.makedirs('model', exist_ok=True)
+os.makedirs('kaggle_dataset', exist_ok=True)
+
+# Register socketio handlers for multimodal monitoring
+from routes.multimodal_routes import register_socketio_handlers as register_multimodal_socketio_handlers
+register_multimodal_socketio_handlers(socketio)
 
 # Initialize our patient data and models
 vitals_generator = VitalsGenerator()
@@ -140,6 +174,25 @@ def background_monitoring():
         # Wait before next update
         time.sleep(3)  # Update every 3 seconds
 
+# Also update history data for multimodal data fusion
+        try:
+            if hasattr(multimodal_bp, 'data_fusion'):
+                # Add current vitals to the data fusion engine
+                if '12345' in multimodal_bp.data_fusion.data_cache.get('vitals', {}):
+                    multimodal_bp.data_fusion.add_data('vitals', '12345', {
+                        'heart_rate': current_data['heart_rate'],
+                        'blood_pressure': current_data['blood_pressure'],
+                        'respiratory_rate': current_data['respiratory_rate'],
+                        'oxygen_saturation': current_data['oxygen_saturation'],
+                        'temperature': current_data['temperature'],
+                        'timestamp': current_time,
+                        'risk_score': risk_score,
+                        'risk_factors': risk_factors,
+                        'history': patient_data_history
+                    })
+        except Exception as e:
+            print(f"Error updating multimodal data fusion: {e}")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -151,6 +204,10 @@ def history():
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
+
+@app.route('/documentation')
+def documentation():
+    return render_template('documentation.html')
 
 @app.route('/api/data/history')
 def get_history():
@@ -241,10 +298,6 @@ def handle_settings():
         }
         return jsonify(default_settings)
 
-@app.route('/documentation')
-def documentation():
-    return render_template('documentation.html')
-
 @socketio.on('connect')
 def handle_connect():
     # Send initial data to newly connected client
@@ -307,6 +360,32 @@ if __name__ == '__main__':
     monitoring_thread = threading.Thread(target=background_monitoring)
     monitoring_thread.daemon = True
     monitoring_thread.start()
+    
+    # Create temp directory for file uploads
+    import os
+    os.makedirs('temp', exist_ok=True)
+    
+    # Create directories for multimodal data processing
+    os.makedirs('data/processed', exist_ok=True)
+    
+    # Initialize multimodal data fusion with initial vitals data
+    if hasattr(multimodal_bp, 'data_fusion'):
+        # Get the current vitals
+        current_data = {
+            'heart_rate': patient_data_history['heart_rate'][-1],
+            'blood_pressure': [
+                patient_data_history['blood_pressure_systolic'][-1],
+                patient_data_history['blood_pressure_diastolic'][-1]
+            ],
+            'respiratory_rate': patient_data_history['respiratory_rate'][-1],
+            'oxygen_saturation': patient_data_history['oxygen_saturation'][-1],
+            'temperature': patient_data_history['temperature'][-1],
+            'timestamp': patient_data_history['timestamps'][-1],
+            'history': patient_data_history
+        }
+        
+        # Add to data fusion engine
+        multimodal_bp.data_fusion.add_data('vitals', '12345', current_data)
     
     # Start the Flask app
     socketio.run(app, debug=True)
