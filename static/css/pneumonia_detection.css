@@ -1,0 +1,370 @@
+/* 
+ * Pneumonia Detection Styles
+ * CSS for the pneumonia detection component
+ */
+
+/* Tab Styles */
+.tabs-container {
+    margin-bottom: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+}
+
+.tab-button.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+    font-weight: 600;
+}
+
+.tab-panel {
+    display: none;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Pneumonia Detection Panel */
+.pneumonia-detection-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.upload-section, .results-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.upload-section h3, .results-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #343a40;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #495057;
+}
+
+.form-group input[type="file"] {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px;
+    background-color: #fff;
+}
+
+.btn-upload {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-upload:hover {
+    background-color: #0069d9;
+}
+
+.upload-instructions {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.example-xray-link {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.image-preview-container {
+    margin-top: 15px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.xray-preview {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+.no-image-placeholder {
+    color: #adb5bd;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Results Display */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 123, 255, 0.1);
+    border-left-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #dc3545;
+    padding: 15px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+}
+
+.error-message i {
+    font-size: 20px;
+}
+
+.pneumonia-result {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pneumonia-positive .result-header {
+    background-color: #dc3545;
+    color: white;
+}
+
+.pneumonia-negative .result-header {
+    background-color: #28a745;
+    color: white;
+}
+
+.result-header {
+    display: flex;
+    padding: 15px;
+    gap: 15px;
+    align-items: center;
+}
+
+.result-icon {
+    font-size: 30px;
+}
+
+.result-summary {
+    flex: 1;
+}
+
+.result-summary h3 {
+    margin: 0 0 10px 0;
+    color: white;
+}
+
+.confidence-bar {
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.confidence-level {
+    height: 100%;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.confidence-text {
+    font-size: 13px;
+    margin: 0;
+}
+
+.result-details {
+    padding: 15px;
+    background-color: white;
+}
+
+.detail-item {
+    margin-bottom: 12px;
+}
+
+.detail-label {
+    font-weight: 600;
+    margin-right: 5px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.detail-value {
+    font-size: 14px;
+}
+
+.severity-severe {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.severity-moderate {
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+.severity-mild {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.score-bars {
+    margin-top: 8px;
+}
+
+.score-bar-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.score-label {
+    width: 100px;
+}
+
+.score-bar-container {
+    flex: 1;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    margin: 0 10px;
+    overflow: hidden;
+}
+
+.score-bar {
+    height: 100%;
+    background-color: #007bff;
+    border-radius: 4px;
+}
+
+.pneumonia-positive .score-bar {
+    background-color: #dc3545;
+}
+
+.pneumonia-negative .score-bar {
+    background-color: #28a745;
+}
+
+.score-value {
+    width: 50px;
+    text-align: right;
+}
+
+.recommendations {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.recommendations h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #343a40;
+}
+
+.recommendations ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: #495057;
+}
+
+.recommendations li {
+    margin-bottom: 5px;
+}
+
+.timestamp {
+    font-size: 11px;
+    color: #6c757d;
+    text-align: right;
+    margin-top: 10px;
+}
+
+.disclaimer {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #495057;
+}
+
+.disclaimer i {
+    margin-right: 5px;
+    color: #007bff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .pneumonia-detection-container {
+        grid-template-columns: 1fr;
+    }
+}

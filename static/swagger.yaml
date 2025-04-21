@@ -1,0 +1,435 @@
+swagger: '2.0'
+info:
+  title: Healthcare Monitoring API
+  description: API for healthcare monitoring system with vitals analysis, disease prediction, and medical imaging
+  version: 1.0.0
+basePath: /api
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /status:
+    get:
+      summary: Get API status
+      description: Returns the current status of the API
+      produces:
+        - application/json
+      responses:
+        200:
+          description: API status information
+  /vitals/simulate:
+    get:
+      summary: Generate simulated vital signs
+      description: Generate simulated vital signs for a patient and run AI analysis
+      produces:
+        - application/json
+      parameters:
+        - name: patient_id
+          in: query
+          description: Patient identifier
+          required: false
+          type: string
+          default: demo_patient
+      responses:
+        200:
+          description: Simulated vital signs with AI analysis
+        500:
+          description: Server error
+  /vitals/submit:
+    post:
+      summary: Submit patient vital signs
+      description: Submit actual vital signs for a patient and get AI analysis
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Vital signs data
+          required: true
+          schema:
+            type: object
+            required:
+              - patient_id
+              - heart_rate
+              - blood_pressure
+              - respiratory_rate
+              - oxygen_saturation
+              - temperature
+            properties:
+              patient_id:
+                type: string
+                description: Patient identifier
+              heart_rate:
+                type: number
+                description: Heart rate in BPM
+              blood_pressure:
+                type: array
+                items:
+                  type: integer
+                description: Blood pressure as [systolic, diastolic]
+              respiratory_rate:
+                type: number
+                description: Respiratory rate in breaths/min
+              oxygen_saturation:
+                type: number
+                description: Oxygen saturation percentage
+              temperature:
+                type: number
+                description: Body temperature in Fahrenheit
+              ecg_data:
+                type: array
+                items:
+                  type: number
+                description: ECG data points (optional)
+      responses:
+        200:
+          description: Analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /vitals/history:
+    get:
+      summary: Get patient vital signs history
+      description: Retrieve historical vital signs data for a patient
+      produces:
+        - application/json
+      parameters:
+        - name: patient_id
+          in: query
+          description: Patient identifier
+          required: false
+          type: string
+          default: default_patient
+      responses:
+        200:
+          description: Historical vital signs data
+        500:
+          description: Server error
+  /vitals/alerts:
+    get:
+      summary: Get patient alerts
+      description: Retrieve alerts generated for a patient
+      produces:
+        - application/json
+      parameters:
+        - name: patient_id
+          in: query
+          description: Patient identifier
+          required: false
+          type: string
+          default: default_patient
+      responses:
+        200:
+          description: Patient alerts
+        500:
+          description: Server error
+  /disease-prediction/symptoms:
+    get:
+      summary: Get available symptoms
+      description: Get list of available symptoms for disease prediction
+      produces:
+        - application/json
+      responses:
+        200:
+          description: List of available symptoms
+  /disease-prediction/predict:
+    post:
+      summary: Predict disease from symptoms
+      description: Predict diseases based on provided symptoms with confidence scores
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Symptoms data
+          required: true
+          schema:
+            type: object
+            required:
+              - symptoms
+            properties:
+              symptoms:
+                type: array
+                items:
+                  type: string
+                description: List of symptoms
+              num_diagnoses:
+                type: integer
+                description: Number of differential diagnoses to return
+                default: 5
+      responses:
+        200:
+          description: Disease prediction results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /image-analysis/pneumonia:
+    post:
+      summary: Analyze for pneumonia
+      description: Analyze a chest X-ray image for pneumonia
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: image
+          in: formData
+          description: Chest X-ray image file
+          required: true
+          type: file
+        - name: patient_id
+          in: formData
+          description: Patient identifier
+          required: false
+          type: string
+          default: unknown
+      responses:
+        200:
+          description: Pneumonia analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /image-analysis/brain-tumor:
+    post:
+      summary: Analyze for brain tumor
+      description: Analyze an MRI image for brain tumor
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: image
+          in: formData
+          description: MRI image file
+          required: true
+          type: file
+        - name: patient_id
+          in: formData
+          description: Patient identifier
+          required: false
+          type: string
+          default: unknown
+      responses:
+        200:
+          description: Brain tumor analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /image-analysis/kidney-stone:
+    post:
+      summary: Analyze for kidney stones
+      description: Analyze a CT scan image for kidney stones
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: image
+          in: formData
+          description: CT scan image file
+          required: true
+          type: file
+        - name: patient_id
+          in: formData
+          description: Patient identifier
+          required: false
+          type: string
+          default: unknown
+      responses:
+        200:
+          description: Kidney stone analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /audio-analysis:
+    post:
+      summary: Analyze medical audio
+      description: Analyze a medical audio recording (breathing, cough, heart, voice)
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: audio
+          in: formData
+          description: Audio file
+          required: true
+          type: file
+        - name: patient_id
+          in: formData
+          description: Patient identifier
+          required: false
+          type: string
+          default: unknown
+        - name: audio_type
+          in: formData
+          description: Type of audio (breathing, heart, cough, voice)
+          required: false
+          type: string
+          default: breathing
+      responses:
+        200:
+          description: Audio analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /wearable/connect:
+    post:
+      summary: Connect to wearable device
+      description: Establish connection with a wearable device
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Wearable device connection data
+          required: true
+          schema:
+            type: object
+            required:
+              - device_id
+              - device_type
+              - patient_id
+            properties:
+              device_id:
+                type: string
+                description: Device identifier
+              device_type:
+                type: string
+                description: Type of wearable device
+                enum:
+                  - smartwatch
+                  - glucose_monitor
+                  - activity_tracker
+                  - sleep_monitor
+                  - bp_monitor
+                  - pulse_oximeter
+              patient_id:
+                type: string
+                description: Patient identifier
+              connection_params:
+                type: object
+                description: Additional connection parameters
+      responses:
+        200:
+          description: Connection successful
+        400:
+          description: Invalid input or connection failed
+        500:
+          description: Server error
+  /wearable/disconnect:
+    post:
+      summary: Disconnect wearable device
+      description: Disconnect from a wearable device
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Wearable device disconnection data
+          required: true
+          schema:
+            type: object
+            required:
+              - device_id
+            properties:
+              device_id:
+                type: string
+                description: Device identifier
+      responses:
+        200:
+          description: Disconnection successful
+        400:
+          description: Invalid input or disconnection failed
+        500:
+          description: Server error
+  /wearable/data:
+    get:
+      summary: Get wearable device data
+      description: Retrieve data from a connected wearable device
+      produces:
+        - application/json
+      parameters:
+        - name: device_id
+          in: query
+          description: Device identifier
+          required: true
+          type: string
+        - name: data_type
+          in: query
+          description: Type of data to retrieve
+          required: false
+          type: string
+      responses:
+        200:
+          description: Wearable device data
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /fusion/patient-summary:
+    get:
+      summary: Get comprehensive patient summary
+      description: Retrieve a comprehensive summary of all patient data with multimodal fusion
+      produces:
+        - application/json
+      parameters:
+        - name: patient_id
+          in: query
+          description: Patient identifier
+          required: true
+          type: string
+      responses:
+        200:
+          description: Patient summary with integrated assessment
+        400:
+          description: Invalid input
+        500:
+          description: Server error
+  /fusion/trend-analysis:
+    get:
+      summary: Get trend analysis
+      description: Analyze trends for a specific patient parameter over time
+      produces:
+        - application/json
+      parameters:
+        - name: patient_id
+          in: query
+          description: Patient identifier
+          required: true
+          type: string
+        - name: parameter
+          in: query
+          description: Parameter to analyze (e.g., heart_rate, risk_score)
+          required: true
+          type: string
+        - name: time_window
+          in: query
+          description: Time window in seconds
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Trend analysis results
+        400:
+          description: Invalid input
+        500:
+          description: Server error
